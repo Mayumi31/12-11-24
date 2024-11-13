@@ -7,7 +7,6 @@ import time
 from time import perf_counter
 from sorting_algos import (selection_sort, shell_sort, bucket_sort_with_selection, bucket_sort_with_shell)
 
-
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 bcrypt = Bcrypt(app)
@@ -16,6 +15,20 @@ def get_db_connection():
     conn = sqlite3.connect("job_applications.db")  # Ensure this matches the actual path
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def get_application_count():
+    conn = sqlite3.connect("job_applications.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM applications;")
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count
+
+@app.route('/api/application_count', methods=['GET'])
+def application_count():
+    count = get_application_count()
+    return jsonify({'application_count': count})
 
 # Signup Route
 @app.route("/signup", methods=["GET", "POST"])
@@ -170,24 +183,27 @@ def view_applications(filter_type):
 
 
     if algorithm == "selection":
-        applications = selection_sort(applications, key=key, reverse=reverse)
-        complexity = "O(n^2) time, O(1) space"
+        applications, space_complexity_bytes = selection_sort(applications, key=key, reverse=reverse)
+        time_complexity = "O(n^2)"
     elif algorithm == "shell":
-        applications = shell_sort(applications, key=key, reverse=reverse)
-        complexity = "O(n^1.5) time (avg), O(1) space"
+        applications, space_complexity_bytes = shell_sort(applications, key=key, reverse=reverse)
+        time_complexity = "O(n^1.5) (avg)"
     elif algorithm == "bucket_selection":
-        applications = bucket_sort_with_selection(applications, key=key, reverse=reverse)
-        complexity = "O(n+k) time (bucket) + O(n^2) (selection), O(n+k) space"
+        applications, space_complexity_bytes = bucket_sort_with_selection(applications, key=key, reverse=reverse)
+        time_complexity = "O(n+k) (bucket) + O(n^2) (selection)"
     elif algorithm == "bucket_shell":
-        applications = bucket_sort_with_shell(applications, key=key, reverse=reverse)
-        complexity = "O(n+k) time (bucket) + O(n^1.5) (shell), O(n+k) space"
+        applications, space_complexity_bytes = bucket_sort_with_shell(applications, key=key, reverse=reverse)
+        time_complexity = "O(n+k) (bucket) + O(n^1.5) (shell)"
 
 
-    elapsed_time_ms = (perf_counter() - start_time) * 1000  # Convert to milliseconds
+    # Calculate elapsed time in milliseconds
+    elapsed_time_ms = f"{(perf_counter() - start_time):010.6f}"
 
+    # Check if it's an AJAX request and return the appropriate template
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return render_template('applications_table.html', applications=applications)
 
+    # Pass time and space complexity as separate variables
     return render_template(
         'view_applications.html',
         applications=applications,
@@ -195,6 +211,8 @@ def view_applications(filter_type):
         sort_order=sort_order,
         algorithm=algorithm,
         elapsed_time_ms=elapsed_time_ms,
+        time_complexity=time_complexity,
+        space_complexity_bytes=space_complexity_bytes,  # Pass space complexity in bytes
         username=username
     )
 

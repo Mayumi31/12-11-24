@@ -1,3 +1,5 @@
+import sys
+
 # Selection Sort: Sort by Salary
 def selection_sort(applications, key, reverse=False):
     n = len(applications)
@@ -12,7 +14,10 @@ def selection_sort(applications, key, reverse=False):
                 continue  # Skip if key is missing
         # Swap if a new selected index was found
         applications[i], applications[selected] = applications[selected], applications[i]
-    return applications
+    
+    # Space complexity is approximately the size of applications list
+    space_complexity_bytes = sys.getsizeof(applications)
+    return applications, space_complexity_bytes
 
 def shell_sort(applications, key, reverse=False):
     n = len(applications)
@@ -29,7 +34,9 @@ def shell_sort(applications, key, reverse=False):
             applications[j] = temp
         gap //= 2
     
-    return applications
+    # Space complexity is approximately the size of applications list
+    space_complexity_bytes = sys.getsizeof(applications)
+    return applications, space_complexity_bytes
 
 def bucket_sort_with_selection(applications, key, reverse=False):
     # Creating buckets for the provided key
@@ -43,10 +50,12 @@ def bucket_sort_with_selection(applications, key, reverse=False):
     # Sort each bucket using selection sort
     sorted_apps = []
     for bucket_key in sorted(buckets, reverse=reverse):
-        sorted_bucket = selection_sort(buckets[bucket_key], key, reverse)
+        sorted_bucket, _ = selection_sort(buckets[bucket_key], key, reverse)
         sorted_apps.extend(sorted_bucket)
     
-    return sorted_apps
+    # Space complexity includes size of applications list and buckets dictionary
+    space_complexity_bytes = sys.getsizeof(applications) + sys.getsizeof(buckets) + sum(sys.getsizeof(b) for b in buckets.values())
+    return sorted_apps, space_complexity_bytes
 
 def bucket_sort_with_shell(applications, key, reverse=False):
     # Creating buckets for the provided key
@@ -60,7 +69,9 @@ def bucket_sort_with_shell(applications, key, reverse=False):
     # Sort each bucket using shell sort
     sorted_apps = []
     for bucket_key in sorted(buckets, reverse=reverse):
-        sorted_bucket = shell_sort(buckets[bucket_key], key, reverse)
+        sorted_bucket, _ = shell_sort(buckets[bucket_key], key, reverse)
         sorted_apps.extend(sorted_bucket)
     
-    return sorted_apps
+    # Space complexity includes size of applications list and buckets dictionary
+    space_complexity_bytes = sys.getsizeof(applications) + sys.getsizeof(buckets) + sum(sys.getsizeof(b) for b in buckets.values())
+    return sorted_apps, space_complexity_bytes

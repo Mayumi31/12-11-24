@@ -15,17 +15,21 @@
                 <a href="{{ url_for('logout') }}" class="logout-btn"><i class="bx bx-log-out"></i> Logout</a>
             </div>
             <div class="complexity">
-            <p>Sorted using {{ algorithm }} sort in {{ elapsed_time_ms | round(2) }} ms</p>
-        </div>
-        </div>
+          <p>Sorted using {{ algorithm }} sort in {{ elapsed_time_ms}} seconds</p>
+<p>Time Complexity: {{ time_complexity }}</p>
+<p>Space Complexity: {{ space_complexity_bytes }} bytes</p>
+<p>Total Applications: <span id="applicationCount">Loading...</span></p>
 
-        <h2>Job Applications</h2>
+</div>
+</div>
 
-        <div class="search-sort-container">
-            <!-- Search Form -->
-            <form action="{{ url_for('view_applications', filter_type='date') }}" method="get" class="search-form">
-                <input type="text" name="search" placeholder="Search by title, company, etc." value="{{ request.args.get('search', '') }}">
-                <button type="submit"><i class="bx bx-search"></i> Search</button>
+<h2>Job Applications</h2>
+
+<div class="search-sort-container">
+    <!-- Search Form -->
+    <form action="{{ url_for('view_applications', filter_type='date') }}" method="get" class="search-form">
+        <input type="text" name="search" placeholder="Search by title, company, etc." value="{{ request.args.get('search', '') }}">
+        <button type="submit"><i class="bx bx-search"></i> Search</button>
             </form>
 
             <!-- Sorting Algorithm Selection -->
@@ -80,6 +84,19 @@
                 {% endfor %}
             </table>
         </div>
+
+
+        <script>
+        fetch('/api/application_count')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('applicationCount').textContent = data.application_count;
+            })
+            .catch(error => {
+                console.error('Error fetching application count:', error);
+                document.getElementById('applicationCount').textContent = 'Error';
+            });
+        </script>
 
         <!-- Complexity Display -->
         
